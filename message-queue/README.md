@@ -74,3 +74,56 @@ curl -X POST http://localhost:3000/register \
 -d '{"userId":"u01","email":"u01@gmail.com"}'
 ```
 
+### 10. DLQ (Dead Letter Queue) - hàng đợi chứa message xử lý lỗi
+
+```
+Producer
+   ↓
+user.registered  ──(lỗi)──▶  user.registered.dlq
+```
+
+Xử lý OK → ack
+
+Xử lý FAIL → nack(requeue=false) → vào DLQ
+
+Producer DLQ
+![So sánh producer.js và producer_dlq.js](image-1.png)
+So sánh `producer.js` và `producer_dlq.js`
+
+Cấu hình dead-letter ngay từ producer
+👉 Nếu consumer nack → message tự động sang order_queue.dlq
+
+`comuser_dlq.js`
+
+Gửi message lỗi sang DLQ bằng:
+```
+channel.nack(msg, false, false);
+```
+
+### 10. Vì test DLQ trên file khác
+Sửa 2 file `Dockerfile`
+
+![alt text](image-2.png)
+
+### 11. Build lại Docker
+```cmd
+docker compose down
+docker compose up --build
+```
+
+### 12. Test lỗi thiếu email
+```cmd
+curl -X POST http://localhost:3000/register \
+-H "Content-Type: application/json" \
+-d '{"userId":"u100"}'
+```
+
+### 13. Test lại message đúng
+```cmd
+curl -X POST http://localhost:3000/register \
+-H "Content-Type: application/json" \
+-d '{"userId":"u101","email":"u101@gmail.com"}'
+```
+
+
+

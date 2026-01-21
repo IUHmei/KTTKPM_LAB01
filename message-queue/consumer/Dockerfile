@@ -6,6 +6,6 @@ COPY package.json .
 
 RUN npm install
 
-COPY consumer.js .
+COPY consumer_dlq.js .
 
-CMD ["node", "consumer.js"]
+CMD ["node", "consumer_dlq.js"]
